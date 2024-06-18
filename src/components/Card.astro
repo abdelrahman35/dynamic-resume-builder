@@ -1,0 +1,55 @@
+---
+interface Props {
+  title: string;
+  filePath: string;
+  imgPath: string;
+}
+
+const { title, filePath, imgPath } = Astro.props;
+---
+
+<div class="template-card">
+  <img src={imgPath} alt={title} class="card-image" />
+  <div class="card-text">
+    <span>
+      {title}
+    </span>
+
+    <a class="card-button" href={filePath} download={filePath}> Download </a>
+  </div>
+</div>
+<style>
+  .template-card {
+    width: 250px;
+    gap: 24px;
+  }
+  .template-card,
+  .card-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .card-text {
+    gap: 12px;
+  }
+  .card-image {
+    width: 200px;
+    border: 4px solid white;
+    border-radius: 16px;
+  }
+  .card-button {
+    background-color: white;
+    text-decoration: none;
+    color: black;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    width: 200px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .card-button:hover {
+    background-color: black;
+    color: white;
+  }
+</style>

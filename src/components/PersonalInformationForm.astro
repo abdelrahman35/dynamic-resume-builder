@@ -1,0 +1,194 @@
+---
+import type { JSX } from "astro/jsx-runtime";
+const userInputs: {
+  id: string;
+  label: string;
+  type: "text" | "email";
+  required: boolean;
+  customValidation:"text"|"email"|"phone";
+  element:JSX.Element
+}[] = [
+  {
+    element:'input',
+    id: "first-name",
+    label: "first name",
+    type: "text",
+    required: true,
+    customValidation:'text'
+  },
+  {
+    element:'input',
+    id: "last-name",
+    label: "last name",
+    type: "text",
+    required: true,
+    customValidation:'text'
+  },
+  {
+    element:'input',
+    id: "email",
+    label: "email",
+    type: "email",
+    required: true,
+    customValidation:'email'
+  },
+  {
+    element:'input',
+    id: "phone",
+    label: "phone",
+    type: "text",
+    required: true,
+    customValidation:'phone'
+  },
+  {
+    element:'textarea',
+    id: "address",
+    label: "address",
+    type: "text",
+    required: true,
+    customValidation:'text'
+  },
+
+];
+
+---
+
+<div class="form-wrapper">
+  
+   <form id="personal-information-form" method="post">
+    {
+      userInputs.map((input) => (
+        <div class="input-container">
+          <label class="form-label" for={input.id}>
+            {input.label}
+          </label>
+          <input.element
+            class="form-control"
+            id={input.id}
+            type={input.type}
+            autocomplete="off"
+            onblur=`textValidation(this)`
+            required={input.required}
+            data-validation={input.customValidation}
+          />
+          <span id={`${input.id}+${input.type}`}></span>
+        </div>
+        
+      ))
+    }
+  </form>
+   <button class="btn-primary btn" id="submitBtn" type="submit" value="submit"
+    >Next
+    </button>
+ 
+</div>
+
+<style is:inline>
+  .form-wrapper {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .un-set {
+    display: none;
+    visibility: hidden;
+  }
+</style>
+
+<script is:inline>
+  const globalValidation = {
+    length: {
+      inputList: ["text", "email"],
+      validation: function validateLength(val) {
+        return val.length < 3;
+      },
+      error: "value is too short",
+      classNameStyle: "invalid-feedback",
+    },
+    // regexVaidationForEnglishCharachters: {
+    //   inputList: ["text"],
+    //   validation: function validateLength(val) {
+    //     const regexValidationForEnglishCharacters = /^[a-zA-Z@.]+$/;
+    //     return !regexValidationForEnglishCharacters.test(val);
+    //   },
+    //   error: "only english characters are allowed",
+    //   classNameStyle: "invalid-feedback",
+    // },
+    emailValidation: {
+      inputList: ["email"],
+      validation: function validateEmail(val) {
+        const emailRegex =
+          /^[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*$/gm;
+        return !emailRegex.test(val);
+      },
+      error: "email is not valid",
+      classNameStyle: "invalid-feedback",
+    },
+    onlyNumbers:{
+      inputList: ["phone"],
+      validation: function validateNumbers(val) {
+        const onlyNumbersRegex =/^[0-9]+$/;
+        return !onlyNumbersRegex.test(val);
+      },
+      error: "only numbers are allowed",
+      classNameStyle: "invalid-feedback",
+    }
+  };
+  function textValidation(e) {
+    const input = document.getElementById(e.id);
+    const submitBtn =document.getElementById('submitBtn');
+    const inputValue = e.value;
+    let isError = false;
+    Object.values(globalValidation).map((validationEntity) => {
+      const errorSpan = document.createElement("span");
+      const uniqueId = validationEntity.error + e.id;
+      errorSpan.id = uniqueId;
+      errorSpan.textContent = validationEntity.error;
+      errorSpan.classList = validationEntity.classNameStyle;
+      const inputValidationValues = input.getAttribute('data-validation')
+      if (
+        validationEntity.validation(inputValue) &&
+        validationEntity.inputList.includes(inputValidationValues)
+      ) {
+        if (!document.getElementById(uniqueId)) {
+          input.insertAdjacentElement("afterend", errorSpan);
+          input.classList.add("is-invalid");
+          submitBtn.setAttribute('disabled', true);
+          isError =  true;
+        }
+      } else {
+        if (document.getElementById(uniqueId)) {
+          document.getElementById(uniqueId).remove();
+          input.classList.remove('is-invalid')
+          submitBtn.removeAttribute("disabled");
+          isError =  false;
+        }
+      }
+    });
+    return isError; 
+  }
+
+  const submitBtn = document.getElementById("submitBtn");
+  const form = document.querySelector("form");
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = {};
+    let isError = false;
+    for (let i = 0; i < form.length; i++) {
+      const element = form[i];
+      formData[element.id] = element.value;
+      if(textValidation(element)) {
+        isError = true;
+      }else{
+        isError = false;
+      }
+      console.log(textValidation(element))
+    }
+    if(!isError){
+      localStorage.setItem("data", JSON.stringify(formData));
+    }
+  };
+  submitBtn.addEventListener("click", handleSubmit);
+</script>
